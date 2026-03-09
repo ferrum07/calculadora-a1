@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Audi A1 · Consumo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    body {
+      min-height: 100vh;
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Rajdhani', 'Arial Narrow', sans-serif;
+      color: #e0e0e0;
+      padding-bottom: 48px;
+      background-image:
+        linear-gradient(rgba(229,48,48,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(229,48,48,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 420px;
+      padding: 0 20px;
+    }
+
+    /* HEADER */
+    .header {
+      padding: 36px 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-label {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #e53030;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #555;
+      letter-spacing: 2px;
+      font-weight: 500;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, #e53030, transparent);
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    /* GAUGE */
+    .gauge-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0 4px;
+    }
+    #gauge-needle {
+      transform-origin: 90px 90px;
+      transform: rotate(-135deg);
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #gauge-arc-fill {
+      transition: stroke-dasharray 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* CARDS */
+    .card {
+      background: #111;
+      border-radius: 12px;
+      padding: 16px 20px;
+      border: 1px solid #1e1e1e;
+      margin-bottom: 14px;
+    }
+    .card-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #e53030;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .input-big {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #333;
+      color: #fff;
+      font-size: 36px;
+      font-weight: 700;
+      width: 100%;
+      font-family: 'Share Tech Mono', monospace;
+      letter-spacing: 2px;
+      padding-bottom: 4px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-big:focus { border-color: #e53030; box-shadow: 0 2px 0 #e5303033; }
+    .unit-big { color: #555; font-size: 18px; font-weight: 600; white-space: nowrap; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .card-sm { background: #111; border-radius: 12px; padding: 14px 16px; border: 1px solid #1e1e1e; }
+    .card-label-sm {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: #888;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .input-sm {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #2a2a2a;
+      color: #e0e0e0;
+      font-size: 22px;
+      font-weight: 700;
+      width: 100%;
+      font-family: 'Share Tech Mono', monospace;
+      padding-bottom: 2px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-sm:focus { border-color: #e53030; }
+    .unit-sm { color: #555; font-size: 12px; }
+    .input-row-sm { display: flex; align-items: baseline; gap: 4px; }
+
+    /* RESULT */
+    .result-card {
+      background: #0f0f0f;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #161616;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.4s, border-color 0.4s;
+    }
+    .result-card.active {
+      background: linear-gradient(135deg, #140808, #1a0a0a);
+      border-color: #e5303033;
+    }
+    .result-glow {
+      position: absolute;
+      top: 0; right: 0;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, #e5303015 0%, transparent 70%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .result-card.active .result-glow { opacity: 1; }
+    .result-label {
+      font-size: 10px;
+      letter-spacing: 4px;
+      color: #333;
+      margin-bottom: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+      transition: color 0.4s;
+    }
+    .result-card.active .result-label { color: #e53030; }
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .result-unit-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: #555;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    .result-num {
+      font-size: 38px;
+      font-weight: 700;
+      font-family: 'Share Tech Mono', monospace;
+      color: #2a2a2a;
+      letter-spacing: 1px;
+      line-height: 1;
+      transition: color 0.4s;
+    }
+    .result-num.liters.active { color: #fff; }
+    .result-num.euros.active {
+      color: #e53030;
+      text-shadow: 0 0 12px #e53030, 0 0 30px #e5303055;
+    }
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .pop { animation: pop 0.4s ease; }
+    .result-sub { font-size: 13px; color: #555; margin-top: 4px; }
+    .result-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #2a1010;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #444;
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .result-card.active .result-footer { opacity: 1; }
+
+    .footer-note {
+      text-align: center;
+      font-size: 10px;
+      color: #2a2a2a;
+      letter-spacing: 2px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-row">
+        <div>
+          <div class="brand-label">Audi A1 · 1.2 TFSI</div>
+          <div class="title">Consumo</div>
+          <div class="subtitle">CALCULADORA</div>
+        </div>
+        <!-- Audi rings -->
+        <svg width="60" height="22" viewBox="0 0 60 22">
+          <circle cx="8"  cy="11" r="9" fill="none" stroke="#e53030" stroke-width="1.5" opacity="0.7"/>
+          <circle cx="22" cy="11" r="9" fill="none" stroke="#e53030" stroke-width="1.5" opacity="0.7"/>
+          <circle cx="36" cy="11" r="9" fill="none" stroke="#e53030" stroke-width="1.5" opacity="0.7"/>
+          <circle cx="50" cy="11" r="9" fill="none" stroke="#e53030" stroke-width="1.5" opacity="0.7"/>
+        </svg>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <!-- GAUGE -->
+    <div class="gauge-wrap">
+      <svg width="180" height="110" viewBox="0 0 180 110" id="gauge-svg">
+        <!-- Background arc -->
+        <path
+          d="M 29.8,150.2 A 85 85 0 1 1 150.2,150.2"
+          fill="none" stroke="#1a1a1a" stroke-width="14" stroke-linecap="round"
+        />
+        <!-- Fill arc -->
+        <path id="gauge-arc-fill"
+          d="M 29.8,150.2 A 85 85 0 1 1 150.2,150.2"
+          fill="none" stroke="#e53030" stroke-width="14" stroke-linecap="round"
+          stroke-dasharray="0 534"
+          style="filter: drop-shadow(0 0 6px #e5303088);"
+        />
+        <!-- Tick marks -->
+        <g id="gauge-ticks"></g>
+        <!-- Needle -->
+        <line id="gauge-needle"
+          x1="90" y1="90"
+          x2="46.1" y2="46.1"
+          stroke="#e53030" stroke-width="2.5" stroke-linecap="round"
+        />
+        <circle cx="90" cy="90" r="5" fill="#e53030"/>
+        <circle cx="90" cy="90" r="2.5" fill="#111"/>
+        <!-- Label -->
+        <text x="90" y="105" text-anchor="middle" fill="#444" font-size="9"
+          font-family="Share Tech Mono, monospace" letter-spacing="2">KM · MAX 500</text>
+      </svg>
+    </div>
+
+    <!-- KM INPUT -->
+    <div class="card">
+      <div class="card-label">Kilómetros recorridos</div>
+      <div class="input-row">
+        <input class="input-big" type="number" min="0" placeholder="0" id="km-input" />
+        <span class="unit-big">km</span>
+      </div>
+    </div>
+
+    <!-- PRICE + CONSUMPTION -->
+    <div class="grid-2">
+      <div class="card-sm">
+        <div class="card-label-sm">Precio gasolina</div>
+        <div class="input-row-sm">
+          <input class="input-sm" type="number" min="0" step="0.01" value="1.72" id="price-input" />
+          <span class="unit-sm">€/L</span>
+        </div>
+      </div>
+      <div class="card-sm">
+        <div class="card-label-sm">Consumo medio</div>
+        <div class="input-row-sm">
+          <input class="input-sm" type="number" min="0" step="0.1" value="5.5" id="cons-input" />
+          <span class="unit-sm">L/100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-card" id="result-card">
+      <div class="result-glow"></div>
+      <div class="result-label" id="result-label">Introduce los km ↑</div>
+      <div class="result-grid">
+        <div>
+          <div class="result-unit-label">Combustible</div>
+          <div class="result-num liters" id="res-liters">—</div>
+          <div class="result-sub">litros</div>
+        </div>
+        <div>
+          <div class="result-unit-label">Coste total</div>
+          <div class="result-num euros" id="res-euros">—</div>
+          <div class="result-sub">euros</div>
+        </div>
+      </div>
+      <div class="result-footer" id="result-footer">
+        <span id="footer-l100"></span>
+        <span id="footer-eur100"></span>
+      </div>
+    </div>
+
+    <div class="footer-note">AUDI A1 · 1.2 TFSI · 90CV · GASOLINA 95</div>
+  </div>
+
+  <script>
+    // Draw gauge ticks
+    (function() {
+      const ticks = document.getElementById('gauge-ticks');
+      for (let i = 0; i <= 10; i++) {
+        const angle = (-135 + i * 27) * Math.PI / 180;
+        const r1 = 72, r2 = 80;
+        const x1 = 90 + r1 * Math.cos(angle);
+        const y1 = 90 + r1 * Math.sin(angle);
+        const x2 = 90 + r2 * Math.cos(angle);
+        const y2 = 90 + r2 * Math.sin(angle);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+        line.setAttribute('stroke', i % 5 === 0 ? '#666' : '#333');
+        line.setAttribute('stroke-width', i % 5 === 0 ? '2' : '1');
+        ticks.appendChild(line);
+      }
+    })();
+
+    const kmInput    = document.getElementById('km-input');
+    const priceInput = document.getElementById('price-input');
+    const consInput  = document.getElementById('cons-input');
+    const resultCard = document.getElementById('result-card');
+    const resLiters  = document.getElementById('res-liters');
+    const resEuros   = document.getElementById('res-euros');
+    const resLabel   = document.getElementById('result-label');
+    const needle     = document.getElementById('gauge-needle');
+    const arcFill    = document.getElementById('gauge-arc-fill');
+    const footerL    = document.getElementById('footer-l100');
+    const footerE    = document.getElementById('footer-eur100');
+
+    function getNeedleEnd(angleDeg) {
+      const rad = angleDeg * Math.PI / 180;
+      return {
+        x: 90 + 62 * Math.cos(rad),
+        y: 90 + 62 * Math.sin(rad),
+      };
+    }
+
+    function setNeedle(angleDeg) {
+      const end = getNeedleEnd(angleDeg);
+      needle.setAttribute('x2', end.x.toFixed(2));
+      needle.setAttribute('y2', end.y.toFixed(2));
+      needle.style.transform = `rotate(${angleDeg - (-135)}deg)`;
+      // Actually let's use CSS transform for smooth animation
+      needle.style.transform = `rotate(${angleDeg + 135}deg)`;
+    }
+
+    function triggerPop(el) {
+      el.classList.remove('pop');
+      void el.offsetWidth; // reflow
+      el.classList.add('pop');
+    }
+
+    function calculate() {
+      const km   = parseFloat(kmInput.value);
+      const p    = parseFloat(priceInput.value);
+      const c    = parseFloat(consInput.value);
+
+      if (!isNaN(km) && km > 0 && !isNaN(p) && !isNaN(c)) {
+        const liters = (km * c) / 100;
+        const euros  = liters * p;
+        const pct    = Math.min(km / 500, 1);
+        const angle  = -135 + pct * 270;
+
+        // Update needle via CSS transform
+        needle.style.transform = `rotate(${angle + 135}deg)`;
+
+        // Arc fill: total arc length ~534
+        arcFill.setAttribute('stroke-dasharray', `${pct * 534} 534`);
+
+        // Results
+        resLiters.textContent = liters.toFixed(2);
+        resEuros.textContent  = euros.toFixed(2);
+        footerL.textContent   = `${c.toFixed(1)}L cada 100km`;
+        footerE.textContent   = `${(euros / km * 100).toFixed(2)}€ por 100km`;
+
+        resultCard.classList.add('active');
+        resLiters.classList.add('active');
+        resEuros.classList.add('active');
+        resLabel.textContent = 'Resultado';
+
+        triggerPop(resLiters);
+        triggerPop(resEuros);
+      } else {
+        needle.style.transform = 'rotate(0deg)';
+        arcFill.setAttribute('stroke-dasharray', '0 534');
+        resLiters.textContent = '—';
+        resEuros.textContent  = '—';
+        resultCard.classList.remove('active');
+        resLiters.classList.remove('active');
+        resEuros.classList.remove('active');
+        resLabel.textContent = 'Introduce los km ↑';
+      }
+    }
+
+    kmInput.addEventListener('input', calculate);
+    priceInput.addEventListener('input', calculate);
+    consInput.addEventListener('input', calculate);
+  </script>
+</body>
+</html>
